@@ -1,45 +1,20 @@
 import numpy as np 
 import torch
+from .utils import ensure_array, detect_backend, op
 
 class Vec4:
     def __init__(self,*x):
         if len(x) != 4:
             raise ValueError("4-vectors expect four values")
         
-        self.x0 = self._ensure_array(x[0])
-        self.x1 = self._ensure_array(x[1])
-        self.x2 = self._ensure_array(x[2])
-        self.x3 = self._ensure_array(x[3])
+        self.x0 = ensure_array(x[0])
+        self.x1 = ensure_array(x[1])
+        self.x2 = ensure_array(x[2])
+        self.x3 = ensure_array(x[3])
 
         if not (self.x0.shape == self.x1.shape == self.x2.shape == self.x3.shape):
             raise ValueError("All components must have the same shape")
-        self.backend = self._detect_backend(self.x0)
-
-    def _ensure_array(self,x):
-        if isinstance(x, (int,float)):
-            return np.array(x)
-        elif isinstance(x, (np.ndarray, torch.Tensor)):
-            return x
-        elif isinstance(x, (list,tuple)):
-            return np.array(x)
-        else:
-            raise TypeError("Input must be either a scalar, list, nupy array, or torch tensor")
-
-    def _detect_backend(self,x):
-        if isinstance(x, torch.Tensor):
-            return "torch"
-        elif isinstance(x, np.ndarray):
-            return "numpy"
-        else:
-            raise TypeError("Unknown backend")
-
-    def _op(self, np_func, torch_func, *args):
-        if self.backend == "numpy":
-            return np_func(*args)
-        elif self.backend == "torch":
-            return torch_func(*args)
-        else:
-            raise TypeError("No function found for backend")
+        self.backend = detect_backend(self.x0)
 
     def __getitem__(self,idx):
         return self.__class__(
@@ -201,14 +176,14 @@ class Vec4:
     
     @property
     def mag(self):
-        return self._op(
+        return op(
             np.sqrt, torch.sqrt,
             self.mag2
         )
 
     @property
     def trans(self):
-        return self._op(
+        return op(
             np.sqrt, torch.sqrt,
             self.x1**2 + self.x2**2
         )
@@ -228,45 +203,28 @@ class Vec4:
 
     @property
     def eta(self):
-        p = self._op(
+        p = op(
             np.sqrt,torch.sqrt, 
             self.x1**2 + self.x2**2 + self.x3**2
             )
         eps = 1e-12 if self.backend == "numpy" else torch.tensor(1e-12,device=self.x1.device)
         num = p + self.x3
         den = p - self.x3 + eps
-        return 0.5 * self._op(np.log,torch.log, num/den)
+        return 0.5 * op(np.log,torch.log, num/den)
     
     @property
     def phi(self):
-        return self._op(np.arctan2,torch.atan2,self.x2,self.x1)
+        return op(np.arctan2,torch.atan2,self.x2,self.x1)
     
     @property
     def theta(self):
-        return self._op(np.arctan2,torch.atan2,self.trans,self.x3)
+        return op(np.arctan2,torch.atan2,self.trans,self.x3)
     
     def DeltaR(self,other):
         if not isinstance(other,Vec4):
             raise TypeError("Must be of type Vec4")
-        return self._op(
+        return op(
             np.sqrt,torch.sqrt,
             (self.eta - other.ets)**2 + (self.phi - other.phi)**2
             )
             
-    #@property
-    #def mass(self):
-    #    E2 = self.E**2
-    #    p2 = self.px**2 + self.py**2 + self.pz**2
-
-    #    diff = E2 - p2
-    #    return self._op(
-    #        np.sqrt, torch.sqrt,
-    #        np.maximum(0,diff) if self.backend == "numpy" else torch.clamp(diff,min=0)
-    #    )
-    
-    #@property
-    #def pt(self):
-    #    return self._op(np.sqrt, torch.sqrt, self.px**2 + self.py**2)
-    
-    
-    

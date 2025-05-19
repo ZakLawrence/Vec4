@@ -91,7 +91,6 @@ class MomentumVec4(Vec4):
         p = op(np.sqrt,torch.sqrt,e**2 - m**2)
         return MomentumVec4.e_eta_phi_p(e,eta,phi,p)
         
-    
     @property
     def e(self):
         return self.x0

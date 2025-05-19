@@ -28,14 +28,14 @@ class Vec4:
         if not isinstance(other,(Vec4,int,float)):
             raise TypeError(f"Unable to perform addition between 4-vectoro and {type(other)}!")
         if isinstance(other,Vec4):
-            return Vec4(
+            return self.__class__(
                 self.x0 + other.x0,
                 self.x1 + other.x1,
                 self.x2 + other.x2,
                 self.x3 + other.x3
             )
         else:  
-            return Vec4(
+            return self.__class__(
                 self.x0 + other,
                 self.x1 + other,
                 self.x2 + other,
@@ -62,14 +62,14 @@ class Vec4:
         if not isinstance(other,(Vec4,int,float)):
             raise TypeError(f"Unable to perform addition between 4-vectoro and {type(other)}!")        
         if isinstance(other,Vec4):
-            return Vec4(
+            return self.__class__(
                 self.x0 - other.x0,
                 self.x1 - other.x1,
                 self.x2 - other.x2,
                 self.x3 - other.x3
             )
         else:  
-            return Vec4(
+            return self.__class__(
                 self.x0 - other,
                 self.x1 - other,
                 self.x2 - other,
@@ -101,7 +101,7 @@ class Vec4:
         if isinstance(other,Vec4):
             return self.dot(other)
         elif isinstance(other,(int,float)):
-            return Vec4(
+            return self.__class__(
                 self.x0 * other,
                 self.x1 * other,
                 self.x2 * other,
@@ -128,7 +128,7 @@ class Vec4:
     def __truediv__(self,other):
         if not isinstance(other,(int,float)):
             raise TypeError(f"Unable to perform division by {type(other)}")
-        return Vec4(
+        return self.__class__(
             self.x0 / other,
             self.x1 / other,
             self.x2 / other,
@@ -138,7 +138,7 @@ class Vec4:
     def __floordiv__(self,other):
         if not isinstance(other,(int,float)):
             raise TypeError(f"Unable to perform division by {type(other)}")
-        return Vec4(
+        return self.__class__(
             self.x0 // other,
             self.x1 // other,
             self.x2 // other,
@@ -191,7 +191,7 @@ class Vec4:
     def to(self,device):
         if self.backend != "torch":
             raise TypeError("Only torch tensors can be moved to devices!")
-        return Vec4(
+        return self.__class__(
             self.x0.to(device),
             self.x1.to(device),
             self.x2.to(device),
@@ -227,4 +227,3 @@ class Vec4:
             np.sqrt,torch.sqrt,
             (self.eta - other.ets)**2 + (self.phi - other.phi)**2
             )
-            
